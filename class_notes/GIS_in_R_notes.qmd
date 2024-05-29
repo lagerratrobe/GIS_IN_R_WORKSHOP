@@ -1,6 +1,7 @@
 ---
 title: "GIS in R Workshop"
 date: "2024-6-21"
+fig-cap-location: top
 format:
   html:
     code-fold: true
