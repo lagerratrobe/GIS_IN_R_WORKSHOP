@@ -29,4 +29,4 @@ The features and areas that we look at can be represented as either vectors (poi
 #### __Mapping__
 For our purposes here, "mapping" refers to the visual representation of these features and their relationships with each other, either as an image generated in a plot, or in a Web based interface.
 
-![]("../images/WA_pop_raster.png")
+![Population Raster](https://github.com/lagerratrobe/GIS_IN_R_WORKSHOP/blob/main/images/WA_pop_raster.png?raw=true)
