@@ -21,3 +21,5 @@ The features and areas that we look at can be represented as either vectors (poi
 For our purposes here, "mapping" refers to the visual representation of these features and their relationships with each other, either as an image generated in a plot, or in a Web based interface.
 
 ![Population Raster](https://github.com/lagerratrobe/GIS_IN_R_WORKSHOP/blob/main/images/WA_pop_raster.png?raw=true)
+
+There are many ways we can generate maps in R.  In this class we'll look at several, including the basic `plot()` function and `leaflet` library.

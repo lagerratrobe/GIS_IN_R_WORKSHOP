@@ -1,0 +1,79 @@
+---
+title: "Working with Vector Data"
+date: "2024-6-2"
+fig-cap-location: top
+format:
+  html:
+    page-layout: full
+    code-fold: show
+    theme: flatly
+execute:
+  enabled: true
+  echo: false
+---
+
+```{css}
+.figure {
+  margin: auto;
+  text-align: center;
+}
+```
+
+### Introducing the `sf` package
+There are several R packages that provide support for working with spatial features, but in this class, we're going to use `sf` to work with vector data.  `sf` is short for "Simple Features", which are described on Wikipedia as being...
+
+> ...a set of standards that specify a common storage and access model of geographic features made of mostly two-dimensional geometries (point, line, polygon, multi-point, multi-line, etc.) used by geographic databases and geographic information systems. It is formalized by both the Open Geospatial Consortium (OGC) and the International Organization for Standardization (ISO).
+
+`sf` provides a standardized way to encode spatial vector data. It binds to ‘GDAL’ for reading and writing data, to ‘GEOS’ for geometrical operations, and to ‘PROJ’ for projection conversions and datum transformations.  
+
+### Why use `sf`?
+From a practical standpoint, `sf` is convenient because it represents features as a `data.frame` (or `tibble`) with an added geometry column.  This is similar to how most databases implement spatial support, and in fact, the spatial operators in `sf` mostly match those found in systems like PostGIS and Snowflake (for example).  This means that people who are already familiar with spatial operators like `st_buffer`, `st_intersect` etc. from other platforms will find `sf` fairly easy to understand.  It also means that R users can treat spatial data like any other tabular data set and use tools from things like the Tidyverse.
+
+_NOTE: One extremely convenient feature of having features stored in dataframes is that they can be stored as a single RDS file._
+
+### Getting started with `sf`
+A common workflow of using `sf` might look like this:
+
+#### 1. Open a spatial data set obtained from a public agency as a shapefile.
+```{r}
+#| echo: true
+library(sf)
+
+states <- st_read("../Data/cb_2018_us_state_20m.shp")
+```
+#### 2. Reproject the data into someting more suitable for spatial analysis
+```{r}
+#| echo: true
+
+albers_states <- st_transform(states, crs = 5070)
+head(albers_states, n=1)
+```
+#### 3. Obtain some spatial information about the data set
+Print the area of Washington State in sq km
+
+```{r}
+#| echo: true
+#| warning: false
+library(dplyr)
+library(units)
+
+albers_states |> 
+  filter(STUSPS == "WA") |>
+  st_area() |>
+  set_units(km^2)
+```
+Wikipedia says that the Area of Washington state is between 172,587 - 184,827 km2, depending on whether we measure just land area, or total area which includes water.  Why the discrepancy?
+
+#### 4. View the data
+Do a simple plot with the geometry of Washington state.
+
+```{r}
+#| echo: true
+#| fig-height: 6
+#| fig-cap: "Washington State, Albers projection"
+albers_wa <- albers_states |> 
+  filter(STUSPS == "WA")
+
+plot(albers_wa$geometry, graticule = TRUE)
+```
+Clearly, the scale of this data is pretty coarse, so it's simplified out a fair amount of land area.  (Something that's good to remember when working with spatial data - spatial resolution matters. )
