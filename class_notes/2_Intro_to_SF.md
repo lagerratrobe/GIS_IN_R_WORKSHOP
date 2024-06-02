@@ -82,4 +82,7 @@ albers_wa <- albers_states |>
 plot(albers_wa$geometry, graticule = TRUE)
 ```
 
+![](https://github.com/lagerratrobe/GIS_IN_R_WORKSHOP/blob/main/images/albers_wa.png?raw=true)
+
+
 Clearly, the scale of this data is pretty coarse, so it's simplified out a fair amount of land area.  (Something that's good to remember when working with spatial data - spatial resolution matters. )
