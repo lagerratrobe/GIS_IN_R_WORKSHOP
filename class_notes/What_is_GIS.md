@@ -1,15 +1,5 @@
----
-title: "GIS in R Workshop"
-date: "2024-6-21"
-fig-cap-location: top
-format:
-  html:
-    code-fold: true
-    theme: flatly
-execute:
-  enabled: true
-  echo: false
----
+GIS in R Workshop
+=================
 
 ## Introduction
 
@@ -23,13 +13,13 @@ execute:
 
 Regardless of what the abbreviation is shorthand for, the meaning(s) we commonly ascribe to "GIS" is something along the lines of:
 
-> Obtaining information about an area or feature based on its location or on the spatial relationships between it and other features. Most commonly used on geographic features.
+> Obtaining information about an area or feature based on its location or on the spatial relationships between it and other features.
 
 The features and areas that we look at can be represented as either vectors (points, lines and polygons), or rasters (discrete or continuous) or a combination of both.
 
 #### __Mapping__
 For our purposes here, "mapping" refers to the visual representation of these features and their relationships with each other, either as an image generated in a plot, or in a Web based interface.
 
-![Population Raster with State Boundaries](https://github.com/lagerratrobe/GIS_IN_R_WORKSHOP/blob/main/images/WA_pop_raster.png?raw=true)
+![Population Raster](https://github.com/lagerratrobe/GIS_IN_R_WORKSHOP/blob/main/images/WA_pop_raster.png?raw=true)
 
 There are many ways we can generate maps in R.  In this class we'll look at several, including; the base `plot()` function and `leaflet` library.
