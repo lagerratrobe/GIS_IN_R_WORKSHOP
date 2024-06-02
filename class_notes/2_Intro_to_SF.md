@@ -10,7 +10,10 @@ There are several R packages that provide support for working with spatial featu
 ### Why use `sf`?
 From a practical standpoint, `sf` is convenient because it represents features as a `data.frame` (or `tibble`) with an added geometry column.  This is similar to how most databases implement spatial support, and in fact, the spatial operators in `sf` mostly match those found in systems like PostGIS and Snowflake (for example).  This means that people who are already familiar with spatial operators like `st_buffer`, `st_intersect` etc. from other platforms will find `sf` fairly easy to understand.  It also means that R users can treat spatial data like any other tabular data set and use tools from things like the Tidyverse.
 
-_NOTE: One extremely convenient feature of having features stored in dataframes is that they can be stored as a single RDS file._
+_NOTE: Another extremely convenient feature of having features stored in dataframes is that they can be stored as a single RDS file._
+
+### Getting started with `sf`
+A common workflow using `sf` might look like this:
 
 #### 1. Open a spatial data set obtained from a public agency as a shapefile.
 
