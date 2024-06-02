@@ -1,0 +1,85 @@
+---
+title: "More complex Operations in sf"
+date: "2024-6-2"
+fig-cap-location: top
+format:
+  html:
+    page-layout: full
+    code-fold: show
+    theme: flatly
+execute:
+  enabled: true
+  echo: false
+---
+
+```{css}
+.figure {
+  margin: auto;
+  text-align: center;
+}
+```
+
+### Creating spatial objects in `sf`
+
+In the previous examples, a shapefile was used as the starting point for our work.  The shapefile format was created by ESRI in the early '90s explicitly for the purpose of storing geographic information and many government agencies adopted it as their default data exchange format.  Another common way of getting geographic information, particularly point data, is in delimited text or CSV format.  `sf` can easily work with geographic data stored in this format, but it needs to be told how to use it.
+
+By default, delimited text has no data types assigned to the fields in it.  R will try to assign sane data types when it reads in a CSV file, but it's unaware that point coordinates are anything other than numeric values.  And as we saw when we opened the U.S. states shapefile before, `sf` uses a specific column, usually named "geometry" to define what the spatial characteristics of a data set are.  So when working with CSV data, or any other data in which the geometry is stored as strings or numerical values, we have to tell `sf` how to create a geometry column from it.
+
+### Working with GNIS data in CSV format
+
+The U.S. Geological Survey developed something called the Geographic Names Information System (GNIS) as the official repository of domestic geographic names.  It's a fascinating tool and you can learn more about it [here]( https://www.usgs.gov/tools/geographic-names-information-system-gnis).  One of the ways in which the GNIS can be queried/used is by downloading a CSV version of all domestic placenames from [here](https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data).  We've done that here and extracted from it the features that represent lakes in the state of Washington. The data is in the class's "Data" folder.  Below we will convert this data into `sf` spatial objects and do some additional analysis with it.
+
+#### 1. Read the CSV data into R as a data.frame
+```{r}
+#| echo: true
+#| warning: false
+
+library(sf)
+library(dplyr)
+
+wa_lakes <- read.csv("../Data/WA_LAKES_GNIS.csv")
+glimpse(wa_lakes)
+
+```
+As, we can see, `read.csv()` did what it could to infer what the data types should be for the fields in the data, but we definitely don't have a geometry column. We'll add one now.
+
+#### 2. Define what `sf` should use as the source for geometry
+
+```{r}
+#| echo: true
+#| warning: false
+library(sf)
+
+wa_lakes_sf <- st_as_sf(wa_lakes,                   # create "sf" object class
+                        coords = c("PRIM_LONG_DEC", # "X" field
+                                   "PRIM_LAT_DEC"), # "Y" field
+                        crs = 4326)                 # Projection to define
+glimpse(wa_lakes_sf)
+```
+As we can see, a new column named "geometry" has been created which contains geometries of type = "POINT".
+
+_Note: When creating the "geometry" column, the source columns will be removed and converted._
+
+#### 3. Visualize the Data
+
+With over 3000 features in the data set, it would look pretty cluttered if we displayed all of it at once, but we can display a subset to see if it looks reasonable to us. We'll first extract the state borders again, so we have something to plot over.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+
+wa_state <- st_read("../Data/cb_2018_us_state_20m.shp",  # read in the shapefile
+                    quiet = TRUE) |>                     # don't print the load info
+  filter(STUSPS == "WA") |>                              # filter to just "WA"
+  st_transform(crs = 4326)                               # reproject on-the-fly to EPSG:4326 
+
+test_lakes <- wa_lakes_sf |>
+  filter(FEATURE_NAME %in% c("Lake Washington", 
+                             "Moses Lake", 
+                             "Sprague Lake"))
+
+plot(wa_state$geometry)
+plot(test_lakes$geometry, add = TRUE, pch=20, col='blue')
+text(st_coordinates(test_lakes), pos=1, test_lakes$FEATURE_NAME, cex=0.75, col = 'blue')
+```

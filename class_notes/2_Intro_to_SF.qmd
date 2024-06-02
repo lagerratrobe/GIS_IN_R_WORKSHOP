@@ -35,6 +35,8 @@ _NOTE: Another extremely convenient feature of having features stored in datafra
 A common workflow using `sf` might look like this:
 
 #### 1. Open a spatial data set obtained from a public agency as a shapefile.
+_NOTE: This data was sourced from the [U.S. Census](https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html) originally._
+
 ```{r}
 #| echo: true
 library(sf)
