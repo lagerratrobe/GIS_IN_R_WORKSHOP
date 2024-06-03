@@ -91,3 +91,5 @@ plot(wa_state$geometry)
 plot(test_lakes$geometry, add = TRUE, pch=20, col='blue')
 text(st_coordinates(test_lakes), pos=1, test_lakes$FEATURE_NAME, cex=0.75, col = 'blue')
 ```
+
+![](https://github.com/lagerratrobe/GIS_IN_R_WORKSHOP/blob/main/images/WA_test_lakes.png?raw=true)
