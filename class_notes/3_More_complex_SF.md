@@ -45,11 +45,11 @@ As, we can see, `read.csv()` did what it could to infer what the data types shou
 ```
 library(sf)
 
-wa_lakes_sf <- st_as_sf(wa_lakes,                   # create "sf" object class
+wa_lakes <- st_as_sf(wa_lakes,                   # create "sf" object class
                         coords = c("PRIM_LONG_DEC", # "X" field
                                    "PRIM_LAT_DEC"), # "Y" field
                         crs = 4326)                 # Projection to define
-glimpse(wa_lakes_sf)
+glimpse(wa_lakes)
 
 Rows: 3,490
 Columns: 14
@@ -82,7 +82,7 @@ wa_state <- st_read("../Data/cb_2018_us_state_20m.shp",  # read in the shapefile
   filter(STUSPS == "WA") |>                              # filter to just "WA"
   st_transform(crs = 4326)                               # reproject on-the-fly to EPSG:4326 
 
-test_lakes <- wa_lakes_sf |>
+test_lakes <- wa_lakes |>
   filter(FEATURE_NAME %in% c("Lake Washington", 
                              "Moses Lake", 
                              "Sprague Lake"))

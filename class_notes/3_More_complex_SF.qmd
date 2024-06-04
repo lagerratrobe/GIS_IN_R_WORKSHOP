@@ -27,7 +27,7 @@ By default, delimited text has no data types assigned to the fields in it.  R wi
 
 ### Working with GNIS data in CSV format
 
-The U.S. Geological Survey developed something called the Geographic Names Information System (GNIS) as the official repository of domestic geographic names.  It's a fascinating tool and you can learn more about it [here]( https://www.usgs.gov/tools/geographic-names-information-system-gnis).  One of the ways in which the GNIS can be queried/used is by downloading a CSV version of all domestic placenames from [here](https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data).  We've done that here and extracted from it the features that represent lakes in the state of Washington. The data is in the class's "Data" folder.  Below we will convert this data into `sf` spatial objects and do some additional analysis with it.
+The U.S. Geological Survey developed something called the Geographic Names Information System (GNIS) as the official repository of domestic geographic names.  It's a fascinating tool and you can learn more about it [here](https://www.usgs.gov/tools/geographic-names-information-system-gnis).  One of the ways in which the GNIS can be queried/used is by downloading a CSV version of all domestic placenames from [here](https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data).  We've done that here and extracted from it the features that represent lakes in the state of Washington. The data is in the class's "Data" folder.  Below we will convert this data into `sf` spatial objects and do some additional analysis with it.
 
 #### 1. Read the CSV data into R as a data.frame
 ```{r}
@@ -50,11 +50,11 @@ As, we can see, `read.csv()` did what it could to infer what the data types shou
 #| warning: false
 library(sf)
 
-wa_lakes_sf <- st_as_sf(wa_lakes,                   # create "sf" object class
+wa_lakes <- st_as_sf(wa_lakes,                      # create "sf" object class
                         coords = c("PRIM_LONG_DEC", # "X" field
                                    "PRIM_LAT_DEC"), # "Y" field
                         crs = 4326)                 # Projection to define
-glimpse(wa_lakes_sf)
+glimpse(wa_lakes)
 ```
 As we can see, a new column named "geometry" has been created which contains geometries of type = "POINT".
 
@@ -74,7 +74,7 @@ wa_state <- st_read("../Data/cb_2018_us_state_20m.shp",  # read in the shapefile
   filter(STUSPS == "WA") |>                              # filter to just "WA"
   st_transform(crs = 4326)                               # reproject on-the-fly to EPSG:4326 
 
-test_lakes <- wa_lakes_sf |>
+test_lakes <- wa_lakes |>
   filter(FEATURE_NAME %in% c("Lake Washington", 
                              "Moses Lake", 
                              "Sprague Lake"))
@@ -82,4 +82,78 @@ test_lakes <- wa_lakes_sf |>
 plot(wa_state$geometry)
 plot(test_lakes$geometry, add = TRUE, pch=20, col='blue')
 text(st_coordinates(test_lakes), pos=1, test_lakes$FEATURE_NAME, cex=0.75, col = 'blue')
+```
+
+### Analyzing spatial relationships
+
+So far we've used `sf` to open a shapefile and to load some CSV data as point features.  We've also visualized them in a very basic fashion, with just enough detail to validate that our data looks as expected.  Now it's time to do something more analytic with the data.  We'll load in an additional data set and use it to answer some questions.
+
+### Using RDS files as a data source
+
+As discussed earlier, one of the nice things about working with `sf` is that spatial data can be saved in RDS format and reused later.  Doing this preserves the data types and spatial geometry definitions.  We'll be using the "gnis_pop_place.RDS" file contained in the class's "Data" folder to load in a set of GNIS data points that represents populated places.
+
+```{r}
+#| echo: true
+#| warning: false
+
+pop_places <- readRDS("../Data/gnis_pop_place.RDS")
+glimpse(pop_places)
+
+```
+
+### Answering a few spatial questions
+
+#### 1. How far is it from Seattle to Spokane?
+
+```{r}
+#| echo: true
+#| warning: false
+
+
+seattle <- filter(pop_places, FEATURE_NAME == "Seattle" & STATE_ALPHA == "WA")
+spokane <- filter(pop_places, FEATURE_NAME == "Spokane" & STATE_ALPHA == "WA")
+
+st_distance(seattle, spokane) |>
+  units::set_units("miles")
+```
+
+_NOTE: `st_distance` will automatically calculate great circle distances when it detects that lat, lon coordinates are used._
+
+#### 2. How many lakes are within 15 km of Sprague, WA?
+
+To do this, we're going to create a buffer with a radius of 15 km around Sprague and then look for any lake points that fall within it.
+
+```{r}
+#| echo: true
+#| warning: false
+
+sprague <- filter(pop_places, 
+                  FEATURE_NAME == "Sprague" & 
+                    STATE_ALPHA == "WA" &
+                    COUNTY_NAME == "Lincoln")
+
+sprague_lk <- wa_lakes |>
+  filter(FEATURE_ID == 1508616)
+
+sprague_albers <- st_transform(sprague, 5070)
+wa_lakes_albers <- st_transform(wa_lakes, 5070)
+pop_places_albers <- st_transform(pop_places, 5070)
+sprague_lk <- filter(wa_lakes_albers, FEATURE_ID == 1508616)
+sprague_10km_buffer <- st_buffer(sprague_albers, 9700)
+
+wa_lakes_albers[unlist(st_intersects(sprague_10km_buffer, wa_lakes_albers)),] |>
+select(FEATURE_NAME, COUNTY_NAME) |> View()
+
+st_intersection(wa_lakes_albers, sprague_10km_buffer$geometry) |>
+  select(FEATURE_NAME, COUNTY_NAME) |> View()
+
+wa_lakes_albers[which(st_is_within_distance(wa_lakes_albers, sprague_albers, dist = 9700, sparse = FALSE)),] |>
+  select(FEATURE_NAME, COUNTY_NAME) |> View()
+
+plot(sprague_10km_buffer$geometry)
+plot(sprague_albers$geometry, add = TRUE)
+plot(sprague_lk$geometry, add = TRUE)
+plot(wa_lakes_albers$geometry, add = TRUE, pch=20, col='blue')
+
+
 ```
